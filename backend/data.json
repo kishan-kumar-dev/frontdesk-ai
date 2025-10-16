@@ -1,0 +1,56 @@
+{
+  "requests": [
+    {
+      "id": "b297b69c-981a-4751-8aa2-83bab7c05a65",
+      "question": "What are your salon hours?",
+      "status": "resolved",
+      "answer": "We’re open 9 AM to 6 PM!"
+    },
+    {
+      "id": "2485ad29-7dfa-4a76-81a1-9324e8a9f7a4",
+      "question": "Do you have parking available?",
+      "status": "resolved",
+      "answer": "Let me check with my supervisor and get back to you."
+    },
+    {
+      "id": "85cec411-afdf-429a-90c8-2d2e15ebd968",
+      "question": "Do you offer home services?",
+      "status": "resolved",
+      "answer": "Currently We only provide servies in-salon."
+    },
+    {
+      "id": "adcd3cec-69f5-4fc8-9b41-299263d776f3",
+      "question": "How much does a haircut cost?",
+      "status": "resolved",
+      "answer": "Haircuts start at 499 for men and 699 for woman."
+    },
+    {
+      "id": "aa4fa204-d032-4516-932d-6ab2278c90e8",
+      "question": "Do you offer hair coloring?",
+      "status": "resolved",
+      "answer": "Yes, We offer full coloring,highlight, and touch ups."
+    }
+  ],
+  "knowledge": [
+    {
+      "question": "What are your salon hours?",
+      "answer": "We’re open 9 AM to 6 PM!"
+    },
+    {
+      "question": "Do you have parking available?",
+      "answer": "Let me check with my supervisor and get back to you."
+    },
+    {
+      "question": "Do you offer home services?",
+      "answer": "Currently We only provide servies in-salon."
+    },
+    {
+      "question": "How much does a haircut cost?",
+      "answer": "Haircuts start at 499 for men and 699 for woman."
+    },
+    {
+      "question": "Do you offer hair coloring?",
+      "answer": "Yes, We offer full coloring,highlight, and touch ups."
+    }
+  ]
+}
