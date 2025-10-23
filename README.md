@@ -1,4 +1,3 @@
-
 ```markdown
 # 💬 Frontdesk AI Assistant
 
@@ -9,25 +8,25 @@ It can talk to customers, answer questions, and automatically learn new answers 
 
 ## 🧠 Features
 
-✅ **Conversational AI Assistant**
+✅ **Conversational AI Assistant**  
 - Voice-enabled salon frontdesk agent  
 - Answers customer queries politely and contextually  
 - Speaks back using browser speech synthesis  
 
-✅ **Supervisor Panel**
+✅ **Supervisor Panel**  
 - Escalates unknown questions to supervisor  
 - Supervisor can resolve and teach new answers  
 - Learns automatically and saves to knowledge base  
 
-✅ **Knowledge Base**
+✅ **Knowledge Base**  
 - Persistent JSON storage (`backend/data/knowledge.json`)  
 - Grows automatically with each supervisor correction  
 
-✅ **Mock Mode**
+✅ **Mock Mode**  
 - Works even when OpenAI quota is exceeded or API is offline  
 - Replies with a placeholder AI response  
 
-✅ **Modern UI**
+✅ **Modern UI**  
 - Clean, responsive design (TailwindCSS)  
 - Smooth chat bubbles, typing animation, gradient background  
 
@@ -36,7 +35,7 @@ It can talk to customers, answer questions, and automatically learn new answers 
 ## 🧩 Tech Stack
 
 | Layer | Technology |
-|-------|-------------|
+|-------|------------|
 | Frontend | React + Tailwind CSS |
 | Voice | LiveKit SDK + Web Speech API |
 | Backend | Node.js + Express |
@@ -200,8 +199,7 @@ http://localhost:3000/supervisor
 
 ## 🧰 Mock Mode (Fallback)
 
-If your OpenAI key is invalid or quota is exceeded,
-the assistant switches to **mock mode**, showing:
+If your OpenAI key is invalid or quota is exceeded, the assistant switches to **mock mode**, showing:
 
 ```
 🤖 Mock AI: "your question" sounds interesting!
@@ -213,31 +211,22 @@ This ensures your demo always works, even without billing.
 
 ## 🧪 Example Demo Flow
 
-### Step 1
+1. 👩 Ask: “What are your salon hours?”
+   ➡️ AI: “We’re open daily from 9 AM to 6 PM!”
 
-👩 Ask: “What are your salon hours?”
+2. 👩 Ask: “Do you have spa services?”
+   ➡️ AI: “Hmm, I’m not sure. Let me check with my supervisor.”
 
-➡️ AI: “We’re open daily from 9 AM to 6 PM!”
+3. 👩‍💼 Supervisor opens `/supervisor` → answers → saves.
 
-### Step 2
-
-👩 Ask: “Do you have spa services?”
-➡️ AI: “Hmm, I’m not sure. Let me check with my supervisor.”
-
-### Step 3
-
-👩‍💼 Supervisor opens `/supervisor` → answers → saves.
-
-### Step 4
-
-👩 Ask again: “Do you have spa services?”
-➡️ AI: “Yes, we offer premium spa and relaxation packages!”
+4. 👩 Ask again: “Do you have spa services?”
+   ➡️ AI: “Yes, we offer premium spa and relaxation packages!”
 
 ---
 
 ## 📸 Screenshots (optional)
 
-You can add:
+Place screenshots in:
 
 ```
 /frontend/public/screenshots/
@@ -303,5 +292,4 @@ This project demonstrates:
 
 **Developed with ❤️ by Kishan Kumar**
 For the **Frontdesk Software Engineering Challenge – 2025**
-
 ```
