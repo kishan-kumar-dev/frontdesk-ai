@@ -1,159 +1,307 @@
 
 ```markdown
-# 💬 Frontdesk Human-in-the-Loop AI Supervisor
+# 💬 Frontdesk AI Assistant
 
-## 🧠 Overview
-This project is a **simple prototype AI receptionist** built for the Frontdesk Engineering Test.
-
-It simulates an AI agent that can:
-- Answer known questions from customers
-- Escalate to a human supervisor when it doesn’t know
-- Learn automatically from supervisor answers for future questions
-
-This project fulfills **Phase 1** of the assessment using **React + Node.js**.
+An intelligent, voice-enabled **salon frontdesk AI assistant** built using **React**, **Express**, **LiveKit**, and **OpenAI (with mock fallback)**.  
+It can talk to customers, answer questions, and automatically learn new answers from the supervisor panel.
 
 ---
 
-## ⚙️ Tech Stack
+## 🧠 Features
+
+✅ **Conversational AI Assistant**
+- Voice-enabled salon frontdesk agent  
+- Answers customer queries politely and contextually  
+- Speaks back using browser speech synthesis  
+
+✅ **Supervisor Panel**
+- Escalates unknown questions to supervisor  
+- Supervisor can resolve and teach new answers  
+- Learns automatically and saves to knowledge base  
+
+✅ **Knowledge Base**
+- Persistent JSON storage (`backend/data/knowledge.json`)  
+- Grows automatically with each supervisor correction  
+
+✅ **Mock Mode**
+- Works even when OpenAI quota is exceeded or API is offline  
+- Replies with a placeholder AI response  
+
+✅ **Modern UI**
+- Clean, responsive design (TailwindCSS)  
+- Smooth chat bubbles, typing animation, gradient background  
+
+---
+
+## 🧩 Tech Stack
 
 | Layer | Technology |
-|--------|-------------|
-| Frontend | React (JavaScript) |
+|-------|-------------|
+| Frontend | React + Tailwind CSS |
+| Voice | LiveKit SDK + Web Speech API |
 | Backend | Node.js + Express |
-| Database | Local JSON (`data.json`) |
-| Communication | REST API (via Axios) |
+| AI | OpenAI API (`gpt-4o-mini` / fallback to `gpt-3.5-turbo`) |
+| Storage | JSON files (`knowledge.json`, `help_requests.json`) |
 
 ---
 
-## 🧩 Folder Structure
+## 🧱 Project Structure
+
 ```
 
 frontdesk-ai/
-│
 ├── backend/
-│   ├── server.js          ← Node.js backend API
-│   ├── data.json          ← Auto-created local DB
+│   ├── server.js             # Main backend server (AI, LiveKit, knowledge)
+│   ├── agent.js              # Agent training & supervisor logic
+│   ├── data/
+│   │   ├── knowledge.json    # Learned Q&A pairs
+│   │   └── help_requests.json# Escalated unanswered questions
+│   └── .env                  # Environment variables
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── LiveKitVoice.jsx
+│   │   │   └── SupervisorPanel.jsx
+│   │   ├── App.js
+│   │   ├── index.css
+│   │   └── index.js
 │   └── package.json
 │
-└── frontend/
-├── src/
-│   └── App.js         ← React dashboard
-├── package.json
-└── ...
+└── README.md
 
 ````
 
 ---
 
-## 🚀 How to Run
+## ⚙️ Setup Instructions
 
-### 1️⃣ Start the Backend
-Open a terminal and run:
+### 1️⃣ Backend Setup
+
 ```bash
 cd backend
 npm install
-node server.js
 ````
 
-✅ It should say:
-`Backend running on http://localhost:5000`
+Create a `.env` file inside `/backend`:
+
+```bash
+PORT=5000
+OPENAI_API_KEY=your_openai_api_key_here
+LIVEKIT_API_KEY=your_livekit_api_key_here
+LIVEKIT_API_SECRET=your_livekit_secret_here
+LIVEKIT_URL=https://your-livekit-server-url
+```
+
+Run the backend:
+
+```bash
+node server.js
+```
+
+✅ Output:
+
+```
+✅ Backend running on http://localhost:5000
+```
 
 ---
 
-### 2️⃣ Start the Frontend
-
-Open a **new terminal** and run:
+### 2️⃣ Frontend Setup
 
 ```bash
-cd frontend
+cd ../frontend
 npm install
+npm install react-router-dom
 npm start
 ```
 
-✅ It will open automatically at:
-[http://localhost:3000](http://localhost:3000)
+Open: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 💡 How It Works
+## 🧠 API Endpoints
 
-1. **Ask the AI** a question (e.g. “What are your salon hours?”)
-2. If AI knows → it answers from its knowledge base.
-3. If not → it says “Let me check with my supervisor.”
-
-   * This creates a *help request* visible in the supervisor UI.
-4. **Supervisor answers** the pending request.
-5. The system saves the answer → AI “learns” it.
-6. Next time, the AI answers that question automatically.
-
----
-
-## 🖥️ Features
-
-| Feature                    | Description                                 |
-| -------------------------- | ------------------------------------------- |
-| 🧠 AI Agent                | Responds to known questions                 |
-| 📩 Help Requests           | Automatically created for unknown questions |
-| 👩‍💼 Supervisor Dashboard | Shows pending & resolved requests           |
-| 📚 Knowledge Base          | Displays all learned Q&A                    |
-| 🔄 Auto-Learning           | AI stores new info automatically            |
-| ⚙️ Local Persistence       | Saves everything in `data.json`             |
+| Endpoint         | Method | Description                                          |
+| ---------------- | ------ | ---------------------------------------------------- |
+| `/ask`           | POST   | Ask AI a question. Saves context and returns answer. |
+| `/knowledge`     | GET    | View all saved Q&A knowledge.                        |
+| `/token`         | GET    | Generates a LiveKit voice token.                     |
+| `/help-request`  | POST   | Adds an unresolved question for supervisor.          |
+| `/help-requests` | GET    | List all unresolved help requests.                   |
+| `/resolve`       | POST   | Supervisor resolves a help request and teaches AI.   |
 
 ---
 
-## 📊 Example Flow
+## 💬 How It Works
+
+1. User asks a question (text or voice).
+2. Backend checks knowledge base for similar questions.
+3. If found → responds immediately.
+4. If not → escalates to `/help-request` for supervisor resolution.
+5. Supervisor resolves it via dashboard.
+6. Answer is saved into `knowledge.json`.
+7. AI learns and can now answer automatically next time!
+
+---
+
+## 🎙 Voice Mode (LiveKit)
+
+* Click **🎤 Start Talking** to begin conversation.
+* AI replies with speech (via Web Speech API).
+* Click **🔴 Stop** to end voice session.
+
+---
+
+## 💾 Knowledge & Help Requests
+
+**Example – knowledge.json**
+
+```json
+[
+  {
+    "id": 169000000001,
+    "question": "What are your working hours?",
+    "answer": "We’re open daily from 9 AM to 6 PM.",
+    "createdAt": "2025-10-22T10:00:00Z"
+  }
+]
+```
+
+**Example – help_requests.json**
+
+```json
+[
+  {
+    "id": 169000000002,
+    "question": "Do you offer bridal makeup packages?",
+    "resolved": false
+  }
+]
+```
+
+---
+
+## 🧑‍💼 Supervisor Panel
+
+Visit:
 
 ```
-Customer: "Do you offer coloring?"
-AI: "Let me check with my supervisor."
-↓
-Supervisor UI: Shows pending request
-↓
-Supervisor answers: "Yes, we do!"
-↓
-AI learns and stores the answer
-↓
-Next time AI says: "Yes, we do!"
+http://localhost:3000/supervisor
+```
+
+### Features:
+
+* View unresolved help requests
+* Provide answers and mark them resolved
+* Automatically updates knowledge base
+
+---
+
+## 🧰 Mock Mode (Fallback)
+
+If your OpenAI key is invalid or quota is exceeded,
+the assistant switches to **mock mode**, showing:
+
+```
+🤖 Mock AI: "your question" sounds interesting!
+```
+
+This ensures your demo always works, even without billing.
+
+---
+
+## 🧪 Example Demo Flow
+
+### Step 1
+
+👩 Ask: “What are your salon hours?”
+
+➡️ AI: “We’re open daily from 9 AM to 6 PM!”
+
+### Step 2
+
+👩 Ask: “Do you have spa services?”
+➡️ AI: “Hmm, I’m not sure. Let me check with my supervisor.”
+
+### Step 3
+
+👩‍💼 Supervisor opens `/supervisor` → answers → saves.
+
+### Step 4
+
+👩 Ask again: “Do you have spa services?”
+➡️ AI: “Yes, we offer premium spa and relaxation packages!”
+
+---
+
+## 📸 Screenshots (optional)
+
+You can add:
+
+```
+/frontend/public/screenshots/
+```
+
+Then embed:
+
+```markdown
+![Screenshot 1](public/screenshots/assistant.png)
 ```
 
 ---
 
-## 🧠 Design Notes
+## 🔐 Common Errors
 
-* Backend uses **Express** for clean modular APIs.
-* All data is stored in `data.json` — no external DB setup needed.
-* Frontend uses **Axios** to fetch and update data from the backend.
-* Simple React state management — no Redux or frameworks.
-* Error handling and basic structure are included for clarity.
-
----
-
-## 📽️ Demo Video
-
-🎥 **Watch the demo:**
-https://www.loom.com/share/5a2353dd65c04faa9742a28ad6b8a242
+| Error                | Cause                      | Fix                                |
+| -------------------- | -------------------------- | ---------------------------------- |
+| 429 Quota Exceeded   | Free API key limit reached | Enable mock mode or add billing    |
+| 401 Invalid API Key  | Wrong OpenAI key           | Check `.env`                       |
+| LiveKit Token Error  | Wrong credentials          | Regenerate from LiveKit cloud      |
+| Frontend build fails | Missing deps               | Run `npm install react-router-dom` |
 
 ---
 
-## 🧩 Future Improvements
+## 💼 Submission Checklist
 
-* Integrate real **LiveKit voice calling**
-* Add **supervisor notifications** via email or WebSocket
-* Use **Firebase** or **MongoDB** for persistent cloud data
-* Add authentication for multiple supervisors
-
----
-
-## ✉️ Submission
-
-**Submitted to:** Ruchir (Founder, Frontdesk)
-**By:** Kishan Kumar
+✅ Working frontend & backend
+✅ Voice assistant demo
+✅ Supervisor panel functional
+✅ JSON knowledge saved
+✅ Loom video recorded
+✅ Public GitHub repo uploaded
 
 ---
 
-### ❤️ Thank You
+## 🚀 Quick Commands
 
-It was an enjoyable project!
-Building this helped me understand how Frontdesk approaches “human-in-the-loop” AI systems.
+```bash
+# Start backend
+cd backend && node server.js
+
+# Start frontend
+cd frontend && npm start
+
+# Test AI endpoint
+curl -X POST http://localhost:5000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What time do you open?"}'
+```
+
+---
+
+## 🏁 Final Notes
+
+This project demonstrates:
+
+* Full-stack development using React + Express
+* Real-time AI + voice communication with LiveKit
+* Contextual learning & supervisor-based improvement
+* Error handling and graceful fallbacks for offline mode
+
+---
+
+**Developed with ❤️ by Kishan Kumar**
+For the **Frontdesk Software Engineering Challenge – 2025**
 
 ```

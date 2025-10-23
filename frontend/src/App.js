@@ -1,84 +1,35 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LiveKitVoice from "./components/LiveKitVoice";
+import SupervisorPanel from "./components/SupervisorPanel";
 
-const API = "http://localhost:5000";
-
-function App() {
-  const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState("");
-  const [requests, setRequests] = useState([]);
-  const [knowledge, setKnowledge] = useState([]);
-
-  useEffect(() => {
-    loadRequests();
-    loadKnowledge();
-  }, []);
-
-  async function askAI() {
-    const res = await axios.post(`${API}/ask`, { question });
-    setResponse(res.data.answer || res.data.message);
-    setQuestion("");
-    loadRequests();
-  }
-
-  async function loadRequests() {
-    const res = await axios.get(`${API}/requests`);
-    setRequests(res.data);
-  }
-
-  async function loadKnowledge() {
-    const res = await axios.get(`${API}/knowledge`);
-    setKnowledge(res.data);
-  }
-
-  async function answerRequest(id) {
-    const answer = prompt("Enter your answer:");
-    if (!answer) return;
-    await axios.post(`${API}/requests/${id}`, { answer });
-    alert("Answer saved!");
-    loadRequests();
-    loadKnowledge();
-  }
+export default function App() {
+  const [logs, setLogs] = useState([]);
+  const addLog = (msg) => setLogs((prev) => [...prev, msg]);
 
   return (
-    <div style={{ padding: 20, fontFamily: "sans-serif" }}>
-      <h1>💬 Frontdesk AI Supervisor</h1>
-
-      <h2>Ask the AI</h2>
-      <input
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        placeholder="Ask something..."
-        style={{ padding: 5, marginRight: 10 }}
-      />
-      <button onClick={askAI}>Ask</button>
-
-      <p>
-        <b>Response:</b> {response}
-      </p>
-
-      <h2>Pending Requests</h2>
-      <ul>
-        {requests
-          .filter((r) => r.status === "pending")
-          .map((r) => (
-            <li key={r.id}>
-              ❓ {r.question}{" "}
-              <button onClick={() => answerRequest(r.id)}>Answer</button>
-            </li>
-          ))}
-      </ul>
-
-      <h2>Knowledge Base</h2>
-      <ul>
-        {knowledge.map((k, i) => (
-          <li key={i}>
-            ✅ {k.question} → {k.answer}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-100 text-gray-800">
+              <h1 className="text-3xl font-semibold text-rose-600 mb-8">
+                🎧 Frontdesk Voice Assistant
+              </h1>
+              <LiveKitVoice onLog={addLog} />
+              <div className="mt-6 w-full max-w-md bg-white/70 backdrop-blur-md rounded-xl p-4 text-xs sm:text-sm shadow-inner border border-rose-100 overflow-y-auto max-h-48">
+                {logs.map((log, i) => (
+                  <p key={i} className="text-gray-600">
+                    • {log}
+                  </p>
+                ))}
+              </div>
+            </div>
+          }
+        />
+        <Route path="/supervisor" element={<SupervisorPanel />} />
+      </Routes>
+    </Router>
   );
 }
-
-export default App;
