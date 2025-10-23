@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1761197271411,
+    "question": "hello",
+    "answer": "🤖 Mock AI: \"hello\" sounds interesting!",
+    "createdAt": "2025-10-23T05:27:51.411Z"
+  },
+  {
+    "id": 1761197291397,
+    "question": "what are you?",
+    "answer": "🤖 Mock AI: \"what are you?\" sounds interesting!",
+    "createdAt": "2025-10-23T05:28:11.397Z"
+  },
+  {
+    "id": 1761197771662,
+    "question": "gm",
+    "answer": "🤖 Mock AI: \"gm\" sounds interesting!",
+    "createdAt": "2025-10-23T05:36:11.662Z"
+  },
+  {
+    "question": "Do you offer bridal makeup packages?",
+    "answer": "🤖 Mock AI: \"Do you offer bridal makeup packages?\" sounds interesting!",
+    "createdAt": "2025-10-23T05:55:19.435Z"
+  }
+]

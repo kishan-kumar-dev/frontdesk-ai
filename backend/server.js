@@ -1,81 +1,171 @@
-const express = require("express");
-const cors = require("cors");
-const { v4: uuidv4 } = require("uuid");
-const fs = require("fs");
+import express from "express";
+import cors from "cors";
+import fs from "fs";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import { AccessToken } from "livekit-server-sdk";
+import { getAIResponse } from "./agent.js";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const DB_FILE = "data.json";
+const PORT = process.env.PORT || 5000;
 
-// Create DB file if it doesn’t exist
-if (!fs.existsSync(DB_FILE)) {
-  fs.writeFileSync(
-    DB_FILE,
-    JSON.stringify({ requests: [], knowledge: [] }, null, 2)
-  );
-}
+// 🗂 Paths
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const dataDir = path.join(__dirname, "data");
+const knowledgePath = path.join(dataDir, "knowledge.json");
+const helpReqPath = path.join(dataDir, "help_requests.json");
 
-function loadDB() {
-  return JSON.parse(fs.readFileSync(DB_FILE));
-}
+// Create data dir and files if not exist
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+if (!fs.existsSync(knowledgePath)) fs.writeFileSync(knowledgePath, "[]");
+if (!fs.existsSync(helpReqPath)) fs.writeFileSync(helpReqPath, "[]");
 
-function saveDB(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-}
+// Helper functions
+const load = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
+const save = (file, data) =>
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
-// 🧠 AI "answers" or "asks for help"
-app.post("/ask", (req, res) => {
+// -----------------------------
+// 🧠 AI Question Endpoint
+// -----------------------------
+app.post("/ask", async (req, res) => {
   const { question } = req.body;
-  const db = loadDB();
-  const found = db.knowledge.find((k) =>
-    question.toLowerCase().includes(k.question.toLowerCase())
+  if (!question) return res.status(400).json({ error: "Question required" });
+
+  const knowledge = load(knowledgePath);
+  const match = knowledge.find(
+    (k) => k.question.toLowerCase() === question.toLowerCase()
   );
 
-  if (found) {
-    return res.json({ answer: found.answer });
-  } else {
-    const newReq = { id: uuidv4(), question, status: "pending", answer: null };
-    db.requests.push(newReq);
-    saveDB(db);
-    return res.json({
-      message: "Let me check with my supervisor.",
-      request: newReq,
+  if (match) return res.json({ answer: match.answer });
+
+  try {
+    const answer = await getAIResponse(question, knowledge);
+
+    if (answer === "unknown") {
+      // Escalate to supervisor
+      const helpReqs = load(helpReqPath);
+      const newReq = {
+        id: Date.now(),
+        question,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      };
+      helpReqs.push(newReq);
+      save(helpReqPath, helpReqs);
+
+      return res.json({
+        answer: "Let me check with my supervisor and get back to you.",
+        escalated: true,
+      });
+    }
+
+    // Save answer to knowledge
+    knowledge.push({
+      question,
+      answer,
+      createdAt: new Date().toISOString(),
     });
+    save(knowledgePath, knowledge);
+
+    res.json({ answer });
+  } catch (err) {
+    console.error("❌ AI error:", err);
+    res.status(500).json({ error: "AI response failed" });
   }
 });
 
-// 👨 Supervisor views pending
-app.get("/requests", (req, res) => {
-  const db = loadDB();
-  res.json(db.requests);
+// -----------------------------
+// 📚 Knowledge Routes
+// -----------------------------
+app.get("/knowledge", (req, res) => res.json(load(knowledgePath)));
+
+// -----------------------------
+// 🆘 Help Request Routes
+// -----------------------------
+
+// Explicit POST /help-request (optional for demo)
+app.post("/help-request", (req, res) => {
+  const { question } = req.body;
+  if (!question) return res.status(400).json({ error: "Question required" });
+
+  const helpReqs = load(helpReqPath);
+  const newReq = {
+    id: Date.now(),
+    question,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  };
+  helpReqs.push(newReq);
+  save(helpReqPath, helpReqs);
+
+  res.json({ success: true, request: newReq });
 });
 
-// 👨 Supervisor answers
-app.post("/requests/:id", (req, res) => {
+// Get all pending help requests
+app.get("/help-requests", (req, res) => res.json(load(helpReqPath)));
+
+// Supervisor resolves a help request
+app.post("/help-response/:id", (req, res) => {
   const { id } = req.params;
   const { answer } = req.body;
-  const db = loadDB();
+  if (!answer) return res.status(400).json({ error: "Answer required" });
 
-  const reqItem = db.requests.find((r) => r.id === id);
-  if (!reqItem) return res.status(404).json({ error: "Request not found" });
+  const helpReqs = load(helpReqPath);
+  const idx = helpReqs.findIndex((r) => r.id === parseInt(id));
+  if (idx === -1) return res.status(404).json({ error: "Not found" });
 
-  reqItem.status = "resolved";
-  reqItem.answer = answer;
-  db.knowledge.push({ question: reqItem.question, answer });
-  saveDB(db);
+  // Update help request
+  helpReqs[idx].status = "resolved";
+  helpReqs[idx].answer = answer;
+  helpReqs[idx].resolvedAt = new Date().toISOString();
+  save(helpReqPath, helpReqs);
 
-  res.json({ message: "Answer saved! AI has learned it." });
+  // Add to knowledge base
+  const knowledge = load(knowledgePath);
+  knowledge.push({
+    question: helpReqs[idx].question,
+    answer,
+    createdAt: new Date().toISOString(),
+  });
+  save(knowledgePath, knowledge);
+
+  res.json({ success: true });
 });
 
-// View learned answers
-app.get("/knowledge", (req, res) => {
-  const db = loadDB();
-  res.json(db.knowledge);
+// -----------------------------
+// 🎤 LiveKit Token Endpoint
+// -----------------------------
+app.get("/token", (req, res) => {
+  const { identity } = req.query;
+  try {
+    const at = new AccessToken(
+      process.env.LIVEKIT_API_KEY,
+      process.env.LIVEKIT_API_SECRET,
+      { identity: identity || "FrontdeskAgent" }
+    );
+    at.addGrant({
+      roomJoin: true,
+      room: "voice-room",
+      canPublish: true,
+      canSubscribe: true,
+    });
+    res.json({ token: at.toJwt(), url: process.env.LIVEKIT_URL });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to generate token" });
+  }
 });
 
-// Start the server
-app.listen(5000, () =>
-  console.log("✅ Backend running on http://localhost:5000")
+// -----------------------------
+// 🔥 Start Server
+// -----------------------------
+app.listen(PORT, () =>
+  console.log(`✅ Backend running on http://localhost:${PORT}`)
 );
